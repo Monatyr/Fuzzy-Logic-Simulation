@@ -1,0 +1,69 @@
+FUNCTION_BLOCK
+
+VAR_INPUT
+poziom_naladowania : REAL;
+poziom_jasnosci: REAL;
+natezenie_swiatla: REAL;
+END_VAR
+
+VAR_OUTPUT
+zmiana_jasnosci: REAL;
+END_VAR
+
+
+FUZZIFY natezenie_swiatla
+TERM bardzo_niskie := (0,1) (10, 1) (20, 0.5) (30, 0);
+TERM niskie := (10, 0) (20, 0.5) (30, 1) (40, 1) (50, 0.5) (60, 0);
+TERM wysokie := (40, 0) (50, 0.5) (60, 1) (70, 1) (80, 0.5) (90, 0);
+TERM bardzo_wysokie := (70, 0) (80, 0.5) (90, 1) (100, 1);
+END_FUZZIFY
+
+FUZZIFY poziom_jasnosci
+TERM bardzo_niski := (0, 1) (10, 0.8) (20, 0.3) (30, 0);
+TERM niski := (0, 0) (10, 0.2) (20, 0.7) (30, 1) (40, 1) (50, 0.5) (60, 0);
+TERM wysoki := (40, 0) (50, 0.5) (60, 1) (70, 1) (80, 0.7) (90, 0) (100, 0);
+TERM bardzo_wysoki := (70, 0) (80, 0.3) (90, 1) (100, 1);
+END_FUZZIFY
+
+FUZZIFY poziom_naladowania
+TERM bardzo_niski := (0, 1) (10, 1) (20, 0.6) (30, 0.2) (40, 0);
+TERM niski := (10, 0) (20, 0.4) (30, 0.8) (40, 1) (50, 0.5) (60, 0);
+TERM wysoki := (40, 0) (50, 0.5) (60, 1) (70, 0.8) (80, 0.4) (90, 0);
+TERM bardzo_wysoki := (60, 0) (70, 0.2) (80, 0.6) (90, 1) (100, 1);
+END_FUZZIFY
+
+DEFUZZIFY zmiana_jasnosci
+TERM zmniejsz := (0, 1) (0.1, 1) (0.2, 0.7) (0.3, 0.3) (0.4, 0);
+TERM zostaw := (0.1, 0) (0.2, 0.3) (0.3, 0.7) (0.4, 1) (0.6, 1) (0.7, 0.7) (0.8, 0.3) (0.9, 0);
+TERM zwieksz := (0.6, 0) (0.7, 0.3) (0.8, 0.7) (0.9, 1) (1, 1);
+METHOD : COG;
+DEFAULT := 0;
+END_DEFUZZIFY
+
+
+RULEBLOCK first
+AND: MIN;
+ACT: MIN;
+
+RULE 0: IF poziom_naladowania IS bardzo_niski AND poziom_jasnosci IS NOT bardzo_niski THEN zmiana_jasnosci IS zmniejsz;
+RULE 1: IF poziom_naladowania IS bardzo_niski AND poziom_jasnosci IS bardzo_niski THEN zmiana_jasnosci IS zostaw;
+RULE 2: IF poziom_naladowania IS NOT bardzo_niski AND natezenie_swiatla IS bardzo_niskie AND poziom_jasnosci IS NOT bardzo_niski THEN zmiana_jasnosci is zmniejsz;
+RULE 3: IF poziom_naladowania IS NOT bardzo_niski AND natezenie_swiatla IS bardzo_niskie AND poziom_jasnosci IS bardzo_niski THEN zmiana_jasnosci is zostaw;
+RULE 4: IF poziom_naladowania IS niski AND natezenie_swiatla is NOT bardzo_niskie AND (poziom_jasnosci IS wysoki OR poziom_jasnosci IS bardzo_wysoki) THEN zmiana_jasnosci IS zmniejsz;
+RULE 5: IF poziom_naladowania IS niski AND natezenie_swiatla is NOT bardzo_niskie AND poziom_jasnosci IS niski THEN zmiana_jasnosci IS zostaw;
+RULE 6: IF poziom_naladowania IS niski AND natezenie_swiatla is NOT bardzo_niskie AND poziom_jasnosci IS bardzo_niski THEN zmiana_jasnosci IS zwieksz;
+RULE 7: IF poziom_naladowania IS wysoki AND natezenie_swiatla IS niskie AND poziom_jasnosci IS bardzo_niski THEN zmiana_jasnosci IS zwieksz;
+RULE 8: IF poziom_naladowania IS wysoki AND natezenie_swiatla IS niskie AND (poziom_jasnosci IS niski OR poziom_jasnosci IS wysoki) THEN zmiana_jasnosci IS zostaw;
+RULE 9: IF poziom_naladowania IS wysoki AND natezenie_swiatla IS niskie AND poziom_jasnosci IS bardzo_wysoki THEN zmiana_jasnosci IS zmniejsz;
+RULE 10: IF poziom_naladowania IS wysoki AND (natezenie_swiatla IS wysokie OR natezenie_swiatla IS bardzo_wysokie) AND (poziom_jasnosci IS bardzo_niski OR poziom_jasnosci IS niski) THEN zmiana_jasnosci IS zwieksz;
+RULE 11: IF poziom_naladowania IS wysoki AND (natezenie_swiatla IS wysokie OR natezenie_swiatla IS bardzo_wysokie) AND (poziom_jasnosci IS bardzo_wysoki OR poziom_jasnosci IS wysoki) THEN zmiana_jasnosci IS zostaw;
+RULE 12: IF poziom_naladowania IS bardzo_wysoki AND natezenie_swiatla IS niskie AND (poziom_jasnosci IS bardzo_niski OR poziom_jasnosci IS niski) THEN zmiana_jasnosci IS zwieksz;
+RULE 13: IF poziom_naladowania IS bardzo_wysoki AND natezenie_swiatla IS niskie AND poziom_jasnosci IS wysoki THEN zmiana_jasnosci IS zostaw;
+RULE 14: IF poziom_naladowania IS bardzo_wysoki AND natezenie_swiatla IS niskie AND poziom_jasnosci IS bardzo_wysoki THEN zmiana_jasnosci IS zmniejsz;
+RULE 15: IF poziom_naladowania IS bardzo_wysoki AND (natezenie_swiatla IS wysokie OR natezenie_swiatla IS bardzo_wysokie) AND poziom_jasnosci IS NOT bardzo_wysoki THEN zmiana_jasnosci IS zwieksz;
+RULE 16: IF poziom_naladowania IS bardzo_wysoki AND (natezenie_swiatla IS wysokie OR natezenie_swiatla IS bardzo_wysokie) AND poziom_jasnosci IS bardzo_wysoki THEN zmiana_jasnosci IS zostaw;
+
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
